@@ -29,7 +29,7 @@ namespace Network
             DataReceiver(){ }
 
             //setters
-            void set_socket_DR( QTcpSocket *s ) { this->socket = s; }
+            void set_socket_DR( QTcpSocket *s ) { if(!s) qDebug() << "NULO1"; this->socket = s; }
 
             void run();
         };
@@ -44,7 +44,7 @@ namespace Network
             DataSend(){}
 
             //setters
-            void set_socket_DS( QTcpSocket *s ) { this->socket = s; }
+            void set_socket_DS( QTcpSocket *s ) { if(!s) qDebug() << "NULO2";this->socket = s; }
 
             void write(QString s);
         };

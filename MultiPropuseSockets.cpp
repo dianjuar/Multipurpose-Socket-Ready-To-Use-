@@ -95,11 +95,14 @@ void ServerSimple::newConnection()
 
     set_socket_DR(socket);
     set_socket_DS(socket);
-
-    connect(socket, SIGNAL(connected()), this, SLOT(connected()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-    connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    if(!socket)
+        qDebug() << "ERROR";
+    else{
+        connect(socket, SIGNAL(connected()), this, SLOT(connected()));
+        connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+        connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
+        connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    }
 }
 
 void ServerSimple::connected()
