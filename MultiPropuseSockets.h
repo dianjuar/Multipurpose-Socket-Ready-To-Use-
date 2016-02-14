@@ -48,10 +48,16 @@ namespace Network
 
             void write(QString s);
         };
+        /*Creating this will allow the creation arrays of clients or servers*/
+        class Data: public Network::Base::DataReceiver, public Network::Base::DataSend {
+          public:
+            Data(QTcpSocket *socket) : DataReceiver(socket), DataSend(socket){}
+            Data(){}
+        };
     }
 
     ////////////////////////////////////////////
-    class Client: public Network::Base::DataReceiver, public Network::Base::DataSend
+    class Client: public Network::Base::Data
     {
         Q_OBJECT
     private:
@@ -81,7 +87,7 @@ namespace Network
     ///////////////////////////////////////////
     /// \brief The ServerSimple class
     /// Only works for one petition... for now.
-    class ServerSimple: public Network::Base::DataReceiver, public Network::Base::DataSend
+    class ServerSimple: public Network::Base::Data
     {
         Q_OBJECT
     private:

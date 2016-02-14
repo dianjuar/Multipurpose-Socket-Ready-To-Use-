@@ -31,12 +31,11 @@ void Base::DataReceiver::readyRead()
 }
 /////////////////////////////////////////////////////////
 Client::Client(QString host, int port):
-    Base::DataSend(&socket),
-    Base::DataReceiver(&socket)
+    Base::Data(&socket),
+    host(host),
+    port(port)
 {
     connected_B = false;
-    this->host = host;
-    this->port = port;
 }
 
 void Client::connectToHost()
