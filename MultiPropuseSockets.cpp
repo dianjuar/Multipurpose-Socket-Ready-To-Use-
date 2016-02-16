@@ -74,48 +74,55 @@ void Client::bytesWritten(qint64 bytes)
     qDebug()<<"Bytes written"<<bytes;
 }
 /////////////////////////////////////////////////////////////////////////
-ServerSimple::ServerSimple(QHostAddress adds, int port)
+Server::Server(QHostAddress adds, int port)
 {
     server = new QTcpServer(this);
-    connect(server,SIGNAL(newConnection()), this, SLOT(newConnection()) );
+    connect(server,SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-    if( !server->listen(adds,port) )
+    if( !server->listen(adds, port) )
     {
-        qDebug()<<"Server couldn't start";
+        qDebug() << "Server couldn't start";
     }
     else
     {
-       qDebug()<<"Server started. Listening petitions at"<<adds<<":"<<port;
+       qDebug() << "Server started. Listening petitions at"<<adds<<":"<<port;
     }
 }
 
-void ServerSimple::newConnection()
+void Server::newConnection()
 {
+    QTcpSocket *socket;
     socket = server->nextPendingConnection();
 
     set_socket_DR(socket);
     set_socket_DS(socket);
-    if(!socket)
+
+    sockets.push_back(socket);
+
+    if(!sockets.back())
         qDebug() << "ERROR";
     else{
-        connect(socket, SIGNAL(connected()), this, SLOT(connected()));
-        connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-        connect(socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
-        connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+        connect(sockets.back(), SIGNAL(connected()), this, SLOT(connected()));
+        connect(sockets.back(), SIGNAL(disconnected()), this, SLOT(disconnected()));
+        connect(sockets.back(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
+        connect(sockets.back(), SIGNAL(readyRead()), this, SLOT(readyRead()));
     }
 }
 
-void ServerSimple::connected()
+void Server::connected()
 {
-    qDebug()<<"CONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
+ //   qDebug()<<"CONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
+     qDebug()<<"CONECTED";
 }
 
-void ServerSimple::disconnected()
+void Server::disconnected()
 {
-     qDebug()<<"DISCONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
+   //  qDebug()<<"DISCONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
+     qDebug()<<"DISCONECTED";
 }
 
-void ServerSimple::bytesWritten(qint64 bytes)
+void Server::bytesWritten(qint64 bytes)
 {
-    qDebug()<<"Bytes written"<<bytes<<"in"<<socket->localAddress()<<":"<<socket->peerPort();
+   // qDebug()<<"Bytes written"<<bytes<<"in"<<socket->localAddress()<<":"<<socket->peerPort();
+     qDebug()<<"BYTES";
 }

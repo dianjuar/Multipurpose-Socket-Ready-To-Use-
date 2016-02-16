@@ -4,7 +4,7 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QAbstractSocket>
-
+#include <vector>
 #include <QDebug>
 #include <QByteArray>
 #include <QString>
@@ -87,11 +87,12 @@ namespace Network
     ///////////////////////////////////////////
     /// \brief The ServerSimple class
     /// Only works for one petition... for now.
-    class ServerSimple: public Network::Base::Data
+    class Server: public Network::Base::Data
     {
         Q_OBJECT
     private:
-       QTcpSocket *socket;
+
+       std::vector<QTcpSocket *> sockets;
        QTcpServer *server;
 
     protected:
@@ -99,7 +100,7 @@ namespace Network
        int port;
 
     public:
-       ServerSimple(QHostAddress adds, int port);
+       Server(QHostAddress adds, int port);
 
        //getters
        QHostAddress get_host()   { return adds; }
