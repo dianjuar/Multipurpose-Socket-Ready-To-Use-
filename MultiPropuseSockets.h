@@ -4,7 +4,7 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QAbstractSocket>
-
+#include <vector>
 #include <QDebug>
 #include <QByteArray>
 #include <QString>
@@ -17,7 +17,7 @@ namespace Network
         {
             Q_OBJECT
         private:
-            QTcpSocket *socket;
+            std::vector<QTcpSocket *> sockets;
 
             virtual void dataAnalizer(QString msj){}
 
@@ -25,33 +25,36 @@ namespace Network
             void readyRead();
 
         public:
-            DataReceiver(QTcpSocket *socket);
-            DataReceiver(){ }
+            DataReceiver(QTcpSocket *socket = NULL);
 
             //setters
-            void set_socket_DR( QTcpSocket *s ) { this->socket = s; }
-
+            void set_socket_DR( QTcpSocket *s );
             void run();
         };
         ////////////////////////////////////////////
         class DataSend
         {
         private:
-            QTcpSocket *socket;
+            std::vector<QTcpSocket *> sockets;
 
         public:
-            DataSend(QTcpSocket *socket);
-            DataSend(){}
+            DataSend(QTcpSocket *socket = NULL);
 
             //setters
-            void set_socket_DS( QTcpSocket *s ) { this->socket = s; }
+            void set_socket_DS( QTcpSocket *s );
 
-            void write(QString s);
+            void write(int index, QString s);
+        };
+        /*Creating this will allow the creation arrays of clients or servers*/
+        class Data: public Network::Base::DataReceiver, public Network::Base::DataSend {
+          public:
+            Data(QTcpSocket *socket) : DataReceiver(socket), DataSend(socket){}
+            Data(){}
         };
     }
 
     ////////////////////////////////////////////
-    class Client: public Network::Base::DataReceiver, public Network::Base::DataSend
+    class Client: public Network::Base::Data
     {
         Q_OBJECT
     private:
@@ -81,11 +84,12 @@ namespace Network
     ///////////////////////////////////////////
     /// \brief The ServerSimple class
     /// Only works for one petition... for now.
-    class ServerSimple: public Network::Base::DataReceiver, public Network::Base::DataSend
+    class Server: public Network::Base::Data
     {
         Q_OBJECT
     private:
-       QTcpSocket *socket;
+
+       std::vector<QTcpSocket *> sockets;
        QTcpServer *server;
 
     protected:
@@ -93,7 +97,7 @@ namespace Network
        int port;
 
     public:
-       ServerSimple(QHostAddress adds, int port);
+       Server(QHostAddress adds, int port);
 
        //getters
        QHostAddress get_host()   { return adds; }
