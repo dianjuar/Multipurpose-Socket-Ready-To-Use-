@@ -17,7 +17,7 @@ namespace Network
         {
             Q_OBJECT
         private:
-            QTcpSocket *socket;
+            std::vector<QTcpSocket *> sockets;
 
             virtual void dataAnalizer(QString msj){}
 
@@ -25,28 +25,25 @@ namespace Network
             void readyRead();
 
         public:
-            DataReceiver(QTcpSocket *socket);
-            DataReceiver(){ }
+            DataReceiver(QTcpSocket *socket = NULL);
 
             //setters
-            void set_socket_DR( QTcpSocket *s ) { if(!s) qDebug() << "NULO1"; this->socket = s; }
-
+            void set_socket_DR( QTcpSocket *s );
             void run();
         };
         ////////////////////////////////////////////
         class DataSend
         {
         private:
-            QTcpSocket *socket;
+            std::vector<QTcpSocket *> sockets;
 
         public:
-            DataSend(QTcpSocket *socket);
-            DataSend(){}
+            DataSend(QTcpSocket *socket = NULL);
 
             //setters
-            void set_socket_DS( QTcpSocket *s ) { if(!s) qDebug() << "NULO2";this->socket = s; }
+            void set_socket_DS( QTcpSocket *s );
 
-            void write(QString s);
+            void write(int index, QString s);
         };
         /*Creating this will allow the creation arrays of clients or servers*/
         class Data: public Network::Base::DataReceiver, public Network::Base::DataSend {
