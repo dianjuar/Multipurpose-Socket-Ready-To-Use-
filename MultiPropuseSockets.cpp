@@ -3,45 +3,38 @@
 using namespace Network;
 
 
-Base::DataSend::DataSend(QTcpSocket *socket)
+Base::DataSend::DataSend(QTcpSocket socket)
 {
-    if(socket)
-        sockets.push_back(socket);
+    this->socket = socket;
 }
-void Base::DataSend::set_socket_DS(QTcpSocket *s)
+void Base::DataSend::set_socket_DS(QTcpSocket socket)
 {
-    if(s)
-        sockets.push_back(s);
+    this->socket = socket;
 }
-void Base::DataSend::write(int index, QString s)
+void Base::DataSend::write(QString s)
 {
-    sockets.at(index)->write( s.toUtf8() );
+    socket->write(s.toUtf8());
     socket->flush();
 }
 /////////////////////////////////////////////////////////
-Base::DataReceiver::DataReceiver(QTcpSocket *socket)
+Base::DataReceiver::DataReceiver(QTcpSocket socket)
 {
-    n_sockets = 0;
-    sockets = new *QTcpSocket;
-    if(socket)
-       sockets.push_back(socket);
+     this->socket = socket;
 }
 
-void Base::DataReceiver::set_socket_DR(QTcpSocket *s)
+void Base::DataReceiver::set_socket_DR(QTcpSocket socket)
 {
-    if(s)
-        sockets.push_back(s);
+    this->socket = socket;
 }
 
 void Base::DataReceiver::readyRead()
 {
-    qDebug()<<("\n*********Reading**********");
-    QString s( socket->readAll() );
-    qDebug() << s;
-    qDebug()<<("********Analizing***********");
-
+    QString s(socket->readAll());
+    qDebug()<< socket->socketDescriptor() << " Reading";
     dataAnalizer(s);
 }
+
+Server::Server
 /////////////////////////////////////////////////////////
 Client::Client(QString host, int port):
     Base::Data(&socket),
@@ -86,59 +79,20 @@ void Client::bytesWritten(qint64 bytes)
 {
     qDebug()<<"Bytes written"<<bytes;
 }
-/////////////////////////////////////////////////////////////////////////
-Server::Server(QHostAddress adds, int port)
-{
-    server = new QTcpServer(this);
-    connect(server,SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-    if( !server->listen(adds, port) )
+Server::Server(){
+
+}
+void Server::Server::startServer(QHostAddress adds, int port){
+    if(!this->listen(adds, port)){
+         qDebug() << "Server couldn't start";
+    }else
     {
-        qDebug() << "Server couldn't start";
-    }
-    else
-    {
-       qDebug() << "Server started. Listening petitions at"<<adds<<":"<<port;
+       qDebug() << "Server started. Listening petitions at " << adds << ":" << port;
     }
 }
 
-void Server::newConnection()
-{
-    QTcpSocket *socket;
-    socket = server->nextPendingConnection();
-
-    set_socket_DR(socket);
-    set_socket_DS(socket);
-
-    sockets.push_back(socket);
-
-    if(!sockets.back())
-        qDebug() << "ERROR";
-    else{
-        /*Para saber quien respondio se debe sobre escribir QTcpSocket así llevar un registro es parte de la libreria general*/
-        /*Es mejor plantear una clase que herede de estas para no reducir su enfoque general*/
-        /*Usar dichas clases en comunicación*/
-        connect(sockets.back(), SIGNAL(connected()),          this, SLOT(connected()));
-        connect(sockets.back(), SIGNAL(disconnected()),       this, SLOT(disconnected()));
-        connect(sockets.back(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
-        connect(sockets.back(), SIGNAL(readyRead()),          this, SLOT(readyRead()));
-    }
-}
-/*Debo identificar el socket que realizo esto*/
-void Server::connected()
-{
- //   qDebug()<<"CONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
-     qDebug()<<"CONECTED";
-}
-
-void Server::disconnected()
-{
-   //  qDebug()<<"DISCONECTED to -> "<<socket->localAddress()<<":"<<socket->peerPort();
-     qDebug()<<"DISCONECTED";
-}
-
-void Server::bytesWritten(qint64 bytes)
-{
-   // qDebug()<<"Bytes written"<<bytes<<"in"<<socket->localAddress()<<":"<<socket->peerPort();
-     qDebug()<<"BYTES";
+void Server::Server::incomingConnection(int socket_descriptor){
+    qDebug() << "Connecting to socket " << socket_descriptor;
+    //QThread connection = new QTH
 }

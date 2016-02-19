@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QByteArray>
 #include <QString>
+#include <QThread>
 
 namespace Network
 {
@@ -17,33 +18,28 @@ namespace Network
         {
             Q_OBJECT
         private:
-            std::vector<QTcpSocket *> sockets;
-
+            QTcpSocket socket;
             virtual void dataAnalizer(QString msj){}
 
         public slots:
             void readyRead();
 
         public:
-            DataReceiver(QTcpSocket *socket = NULL);
-
+            DataReceiver(QTcpSocket socket = NULL);
             //setters
-            void set_socket_DR( QTcpSocket *s );
-            void run();
+            void set_socket_DR(QTcpSocket socket);
         };
         ////////////////////////////////////////////
         class DataSend
         {
         private:
-            std::vector<QTcpSocket *> sockets;
+             QTcpSocket socket;
 
         public:
-            DataSend(QTcpSocket *socket = NULL);
-
+            DataSend(QTcpSocket socket = NULL);
             //setters
-            void set_socket_DS( QTcpSocket *s );
-
-            void write(int index, QString s);
+            void set_socket_DS(QTcpSocket socket);
+            void write(QString s);
         };
         /*Creating this will allow the creation arrays of clients or servers*/
         class Data: public Network::Base::DataReceiver, public Network::Base::DataSend {
@@ -52,6 +48,43 @@ namespace Network
             Data(){}
         };
     }
+
+    ////////////////////////////////////////////
+    class Server: public QTcpServer
+    {
+        Q_OBJECT
+    public:
+        explicit Server(QObject *parent = 0);
+        void startServer(QHostAddress adds, int port);
+
+    protected:
+        void incomingConnection(int socket_descriptor);
+
+    signals:
+
+    public slots:
+
+    };
+
+    ////////////////////////////////////////////
+
+    class connection: public QThread, public Data
+    {
+        Q_OBJECT
+    public:
+        explicit connection(int socket_id, QObject *parent = 0);
+        void run();
+
+    signals:
+        void error(QTcpSocket::SocketError serror);
+    protected:
+        void incomingConnection(int socket_descriptor);
+
+
+
+    public slots:
+
+    };
 
     ////////////////////////////////////////////
     class Client: public Network::Base::Data
@@ -80,37 +113,6 @@ namespace Network
        void	connected();
        void	disconnected();
        void	bytesWritten(qint64 bytes);
-    };
-    ///////////////////////////////////////////
-    /// \brief The ServerSimple class
-    /// Only works for one petition... for now.
-    class Server: public Network::Base::Data
-    {
-        Q_OBJECT
-    private:
-
-       std::vector<QTcpSocket *> sockets;
-       QTcpServer *server;
-
-    protected:
-       QHostAddress adds;
-       int port;
-
-    public:
-       Server(QHostAddress adds, int port);
-
-       //getters
-       QHostAddress get_host()   { return adds; }
-       int get_port()            { return port; }
-
-    signals:
-
-    public slots:
-       void newConnection();
-       void	connected();
-       void	disconnected();
-       void	bytesWritten(qint64 bytes);
-
     };
 
 }
