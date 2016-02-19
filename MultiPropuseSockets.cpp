@@ -33,8 +33,30 @@ void Base::DataReceiver::readyRead()
     qDebug()<< socket->socketDescriptor() << " Reading";
     dataAnalizer(s);
 }
+////////////////////////////////////////////////////////////
 
-Server::Server
+connection::connection(int socket_id) : socket_descriptor(socket_id){}
+
+void connection::run(){
+    this->socket = new QTcpSocket;
+    if(!this->socket->setSocketDescriptor(this->socket_descriptor))
+        emit error(socket->error());
+    else{
+        this->set_socket_DR(socket);
+        this->set_socket_DS(socket);
+        connect(socket, SIGNAL(readyRead()),    this, SLOT(readyRead()),    Qt::DirectConnection);
+        connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()), Qt::DirectConnection);
+        qDebug() << socket_descriptor << " Connected";
+        exec();
+    }
+}
+
+void connection::disconnected(){
+    qDebug() << socket_descriptor << " Disconnected";
+    socket->deleteLater();
+    exit(0);
+}
+
 /////////////////////////////////////////////////////////
 Client::Client(QString host, int port):
     Base::Data(&socket),
@@ -54,9 +76,9 @@ void Client::connectToHost()
 
     if(connected_B)//connected
     {
-        connect(&socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+        connect(&socket, SIGNAL(disconnected()),       this, SLOT(disconnected()));
         connect(&socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
-        connect(&socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+        connect(&socket, SIGNAL(readyRead()),          this, SLOT(readyRead()));
     }
     else
     {
@@ -79,11 +101,10 @@ void Client::bytesWritten(qint64 bytes)
 {
     qDebug()<<"Bytes written"<<bytes;
 }
+///////////////////////////////////////////////////////////
+Server::Server(QHostAddress adds, int port) : adds(adds), port(port){}
 
-Server::Server(){
-
-}
-void Server::Server::startServer(QHostAddress adds, int port){
+void Server::Server::startServer(){
     if(!this->listen(adds, port)){
          qDebug() << "Server couldn't start";
     }else
@@ -94,5 +115,7 @@ void Server::Server::startServer(QHostAddress adds, int port){
 
 void Server::Server::incomingConnection(int socket_descriptor){
     qDebug() << "Connecting to socket " << socket_descriptor;
-    //QThread connection = new QTH
+    connection *my_conn = new connection(socket_descriptor);
+    connect(my_conn, SIGNAL(finished()), my_conn, SLOT(deleteLater()));
+    my_conn->start();
 }
